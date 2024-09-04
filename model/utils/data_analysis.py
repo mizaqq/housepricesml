@@ -39,8 +39,7 @@ def get_missing_values(df):
     return missing_values_cols
 
 
-def get_data_for_preprocessing(data_path, treshhold):
-    df = pd.read_csv(data_path)
+def get_data_for_preprocessing(df, treshhold):
     uncorrelated_col = get_uncorrelated_col(df, treshhold)
     insignificant_col = get_insignificant_columns(df)
     missing_values_col = get_missing_values(df)
