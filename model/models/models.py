@@ -5,10 +5,10 @@ from sklearn.linear_model import LinearRegression
 from xgboost import XGBRegressor
 from keras.api.models import Sequential
 from keras.api import Layer
+from sklearn.metrics import mean_squared_error
 
 
 class Model(BaseModel, ABC):
-
     @abstractmethod
     def fit(self, X: pd.DataFrame, y: pd.DataFrame):
         pass
@@ -32,9 +32,11 @@ class Regressor(Model):
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         return self.model.predict(X)
 
+    def evaluate(self, X, y: pd.DataFrame):
+        return mean_squared_error(y, self.predict(X))
+
 
 class XGBModel(Model):
-
     def __init__(self, **kwargs):
         self.model = XGBRegressor(**kwargs)
 
@@ -44,6 +46,9 @@ class XGBModel(Model):
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         return self.model.predict(X)
 
+    def evaluate(self, X, y: pd.DataFrame):
+        return mean_squared_error(y, self.predict(X))
+
 
 class NeuralNetwork(Model):
     def __init__(self, **kwargs):
@@ -52,7 +57,7 @@ class NeuralNetwork(Model):
     def add_to_model(self, layer: Layer):
         self.model.add(layer)
 
-    def compile(self, optimizer='adam', loss='mean_squared_error', metrics=['mean_squared_error']):
+    def compile(self, optimizer="adam", loss="mean_squared_error", metrics=["mean_squared_error"]):
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     def fit(self, X: pd.DataFrame, y: pd.DataFrame) -> None:
@@ -60,3 +65,6 @@ class NeuralNetwork(Model):
 
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         return self.model.predict(X)
+
+    def evaluate(self, X, y: pd.DataFrame):
+        return mean_squared_error(y, self.predict(X))

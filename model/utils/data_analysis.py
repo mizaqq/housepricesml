@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from utils.chi_square import perform_chi_square_test
+from model.utils.chi_square import perform_chi_square_test
 from scipy.stats import shapiro
 
 
@@ -12,7 +12,7 @@ def get_uncorrelated_col(df, threshold):
     for i in x.columns:
         corr_val = np.corrcoef(x[i], y)
         if abs(corr_val[0][1]) < threshold:
-            corr_y.append(i)
+            corr_y.append((i, round(float(corr_val[0][1]), 3)))
     return corr_y
 
 
@@ -22,7 +22,7 @@ def get_insignificant_columns(df):
     col_to_drop = []
     for sig in col_significance:
         if sig[1][2] == False:
-            col_to_drop.append(sig[0])
+            col_to_drop.append((sig[0], round(float(sig[1][1]), 3)))
     return col_to_drop
 
 
