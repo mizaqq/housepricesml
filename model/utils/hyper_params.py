@@ -4,6 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 from xgboost import XGBRegressor
 from sklearn.model_selection import KFold, cross_val_score, RandomizedSearchCV, GridSearchCV
+import json
+
 
 def perform_grid_search():
     df = pd.read_csv("./model/data/train_preprocessed.csv")
@@ -24,7 +26,6 @@ def perform_grid_search():
         "lambda": [0.01, 0.1],
         "alpha": [0.01, 0.1],
     }
-
 
     model_test = XGBRegressor(random_state=0)
 
@@ -48,22 +49,24 @@ def perform_grid_search():
     results_df.to_csv("submission-grid-search-xgb-porto-01.csv", index=False)
 
 
+def perform_random_search(X_train, y_train):
+    params = {
+        'learning_rate': [0.01, 0.05, 0.1],
+        'n_estimators': [100, 500, 1000],
+        'min_child_weight': [1, 5, 10],
+        'gamma': [0.5, 1, 1.5, 2, 5],
+        'subsample': [0.6, 0.8, 1.0],
+        'colsample_bytree': [0.6, 0.8, 1.0],
+        'max_depth': [3, 4, 5]
+    }
 
-def perform_random_search(X_train,y_train):
-  params = {
-          'learning_rate': [0.01, 0.05, 0.1],
-          'n_estimators': [100, 500, 1000],
-          'min_child_weight': [1, 5, 10],
-          'gamma': [0.5, 1, 1.5, 2, 5],
-          'subsample': [0.6, 0.8, 1.0],
-          'colsample_bytree': [0.6, 0.8, 1.0],
-          'max_depth': [3, 4, 5]
-          }
+    model_test = XGBRegressor(random_state=0)
 
-  model_test = XGBRegressor(random_state=0)
-
-  skf = KFold(n_splits=5, shuffle = True, random_state = 0)
-  param_comb = 7
-  random_search = RandomizedSearchCV(model_test, param_distributions=params, n_iter=param_comb, scoring='r2', n_jobs=-1, cv=skf, verbose=3, random_state=0 )
-  random_search.fit(X_train, y_train)
-  return random_search.best_params_
+    skf = KFold(n_splits=5, shuffle=True, random_state=0)
+    param_comb = 7
+    random_search = RandomizedSearchCV(model_test, param_distributions=params,
+                                       n_iter=param_comb, scoring='r2', n_jobs=-1, cv=skf, verbose=3, random_state=0)
+    random_search.fit(X_train, y_train)
+    with open('best_params.json', 'w') as f:
+        json.dump(random_search.best_params_, f)
+    return random_search.best_params_

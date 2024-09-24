@@ -33,7 +33,7 @@ def get_missing_values(df):
     numeric_df = df.select_dtypes(exclude=["object"])
     for col in missing_values_count[missing_values_count > 0].index:
         if col in numeric_df.columns:
-            missing_values_cols.append((col, shapiro(numeric_df[col].dropna())[1] > 0.05))
+            missing_values_cols.append((col, bool(shapiro(numeric_df[col].dropna())[1] > 0.05)))
         else:
             missing_values_cols.append((col, False))
     return missing_values_cols
@@ -43,4 +43,4 @@ def get_data_for_preprocessing(df, treshhold):
     uncorrelated_col = get_uncorrelated_col(df, treshhold)
     insignificant_col = get_insignificant_columns(df)
     missing_values_col = get_missing_values(df)
-    return uncorrelated_col, insignificant_col, missing_values_col
+    return [x[0] for x in uncorrelated_col], [y[0] for y in insignificant_col], missing_values_col

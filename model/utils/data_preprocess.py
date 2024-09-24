@@ -1,7 +1,9 @@
 import pandas as pd
-from pathlib import Path
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+
+from sklearn.preprocessing import LabelEncoder, StandardScaler, Normalizer
 from utils.data_analysis import get_data_for_preprocessing
+from sklearn.model_selection import train_test_split
+import logging
 
 
 def drop_columns(df, insignificant_col, uncorrelated_col):
@@ -61,6 +63,9 @@ def encode_onehot(df):
 
 def preprocess_data(df, df_test=None):
     uncorrelated_col, insignificant_col, missing_values_col = get_data_for_preprocessing(df, treshhold=0.05)
+    logging.info(f"Uncorrelated columns: {uncorrelated_col}")
+    logging.info(f"Insignificant columns: {insignificant_col}")
+    logging.info(f"Missing values columns: {missing_values_col}")
     df = drop_columns(df, insignificant_col, uncorrelated_col)
     df = fill_missing_values(df, missing_values_col)
     df = encode_numeric(df)
@@ -72,3 +77,22 @@ def preprocess_data(df, df_test=None):
         df_test = encode_onehot(df_test)
         return df, df_test
     return df
+
+
+def scale_data(df):
+    scaler = StandardScaler()
+    df = scaler.fit_transform(df)
+    return df
+
+
+def normalize_data(df):
+    normalized_df = (df-df.mean())/df.std()
+    return normalized_df
+
+
+def split_data(df):
+    X_train, X_test, y_train, y_test = train_test_split(
+        df.drop('SalePrice', axis=1),
+        df['SalePrice'],
+        test_size=0.2, random_state=0)
+    return X_train, X_test, y_train, y_test
