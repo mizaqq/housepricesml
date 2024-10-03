@@ -1,32 +1,44 @@
-from model.utils.data_preprocess import preprocess_data, split_data, normalize_data, scale_data
-from model.models import models
-from keras.api.layers import Dense
-import pandas as pd
-import argparse
-from model.utils.hyper_params import perform_random_search
 import logging
 import json
+import argparse
+import os
+import pandas as pd
+from pathlib import Path
+from keras.api.layers import Dense
+from model.utils.data_preprocess import preprocess_data, split_data, normalize_data, scale_data
+from model.models.models import XGBModel, Regressor, NeuralNetwork, ModelType
+from model.utils.hyper_params import perform_random_search
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger().setLevel(logging.INFO)
 
-argparser = argparse.ArgumentParser()
-argparser.add_argument("--model", type=str, default="regressor")
+
+def parse_args() -> argparse.Namespace:
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument("--model", type=str, default=ModelType.REGRESSOR)
+    argparser.add_argument("--train_data", type=str)
+    argparser.add_argument(
+        "--config",
+        type=str,
+        default=Path(__file__).parent.parent.resolve().joinpath("best_params.json"),
+        help="Path to config file containing parameters for model",
+    )
+    return argparser.parse_args()
 
 
 def main(args):
-    df = pd.read_csv("model/data/train.csv")
-    df = preprocess_data(df)
+    df = preprocess_data(pd.read_csv(args.train_data))
     # df = normalize_data(df)
     X_train, X_test, y_train, y_test = split_data(df)
-    if args.model == "regressor":
-        model = models.Regressor()
-    elif args.model == "xgb":
-        with open('best_params.json', 'r') as f:
+    model_type = ModelType(args.model)
+    if model_type.value == ModelType.REGRESSOR.value:
+        model = Regressor()
+    elif model_type.value == ModelType.XGB.value:
+        with open(args.config, "r") as f:
             params = json.load(f)
-        model = models.XGBModel(**params)
-    elif args.model == "neural_network":
-        model = models.NeuralNetwork()
+        model = XGBModel(**params)
+    else:
+        model = NeuralNetwork()
         model.add_to_model(Dense(64, activation="relu"))
         model.add_to_model(Dense(32, activation="relu"))
         model.add_to_model(Dense(1, activation="linear"))
@@ -35,6 +47,6 @@ def main(args):
     print(model.evaluate(X_test, y_test))
 
 
-args = argparser.parse_args()
-args.model = "xgb"
-main(args)
+if __name__ == "__main__":
+    args = parse_args()
+    main(args)

@@ -1,12 +1,20 @@
+import pandas as pd
+from typing import Union
 from pydantic import BaseModel, ConfigDict
 from abc import ABC, abstractmethod
-import pandas as pd
-from sklearn.linear_model import LinearRegression
+from enum import Enum
+
 from xgboost import XGBRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
 from keras.api.models import Sequential
 from keras.api import Layer
-from sklearn.metrics import mean_squared_error, r2_score
-from typing import Union
+
+
+class ModelType(Enum):
+    REGRESSOR: str = "regressor"
+    XGB: str = "xgb"
+    NEURAL_NETWORK: str = "neural_network"
 
 
 class CustomBaseModel(BaseModel):
@@ -17,11 +25,11 @@ class Model(ABC, CustomBaseModel):
     model: Union[LinearRegression, XGBRegressor, Sequential]
 
     @abstractmethod
-    def fit(self, X: pd.DataFrame, y: pd.DataFrame):
+    def fit(self, X: pd.DataFrame, y: pd.DataFrame) -> None:
         pass
 
     @abstractmethod
-    def predict(self, X: pd.DataFrame):
+    def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         pass
 
     @abstractmethod
@@ -30,7 +38,7 @@ class Model(ABC, CustomBaseModel):
 
 
 class Regressor(Model):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> Model:
         super().__init__(model=LinearRegression())
 
     def fit(self, X: pd.DataFrame, y: pd.DataFrame) -> None:
@@ -39,12 +47,12 @@ class Regressor(Model):
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         return self.model.predict(X)
 
-    def evaluate(self, X, y: pd.DataFrame):
+    def evaluate(self, X, y: pd.DataFrame) -> float:
         return r2_score(y, self.predict(X))
 
 
 class XGBModel(Model):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> Model:
         super().__init__(model=XGBRegressor())
         self.model.set_params(**kwargs)
 
@@ -54,12 +62,12 @@ class XGBModel(Model):
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         return self.model.predict(X)
 
-    def evaluate(self, X, y: pd.DataFrame):
+    def evaluate(self, X, y: pd.DataFrame) -> float:
         return r2_score(y, self.predict(X))
 
 
 class NeuralNetwork(Model):
-    def __init__(self):
+    def __init__(self) -> Model:
         super().__init__(model=Sequential())
 
     def add_to_model(self, layer: Layer):
@@ -68,15 +76,12 @@ class NeuralNetwork(Model):
     def compile(self, optimizer="adam", loss="mean_squared_error", metrics=["mean_squared_error"]):
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
-# TODO refactor this to intake fit params
-    def fit(self, X: pd.DataFrame, y: pd.DataFrame) -> None:
+    # TODO refactor this to intake fit params
+    def fit(self, X: pd.DataFrame, y: pd.DataFrame, epchos, batch_size) -> None:
         self.model.fit(X, y, epochs=100, batch_size=32)
 
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         return self.model.predict(X)
 
-    def evaluate(self, X, y: pd.DataFrame):
+    def evaluate(self, X, y: pd.DataFrame) -> float:
         return r2_score(y, self.predict(X))
-
-
-model = XGBModel()
