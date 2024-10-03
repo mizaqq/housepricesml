@@ -16,7 +16,9 @@ logging.getLogger().setLevel(logging.INFO)
 def parse_args() -> argparse.Namespace:
     argparser = argparse.ArgumentParser()
     argparser.add_argument("--model", type=str, default=ModelType.REGRESSOR)
-    argparser.add_argument("--train_data", type=str)
+    argparser.add_argument(
+        "--train_data", default=Path(__file__).parent.resolve().joinpath("data", "train.csv"), type=str
+    )
     argparser.add_argument(
         "--config",
         type=str,
