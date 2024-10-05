@@ -1,7 +1,7 @@
 import pandas as pd
 
 from sklearn.preprocessing import LabelEncoder, StandardScaler, Normalizer
-from utils.data_analysis import get_data_for_preprocessing
+from model.utils.data_analysis import get_data_for_preprocessing
 from sklearn.model_selection import train_test_split
 import logging
 from typing import List, Sequence
