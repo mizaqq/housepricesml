@@ -1,10 +1,10 @@
+import logging
 import pandas as pd
+from typing import Sequence
 
 from sklearn.preprocessing import LabelEncoder, StandardScaler, Normalizer
-from model.utils.data_analysis import get_data_for_preprocessing
 from sklearn.model_selection import train_test_split
-import logging
-from typing import List, Sequence
+from model.utils.data_analysis import get_data_for_preprocessing
 
 
 def drop_columns(df: pd.DataFrame, insignificant_col: Sequence[str], uncorrelated_col: Sequence[str]) -> pd.DataFrame:

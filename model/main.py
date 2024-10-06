@@ -15,7 +15,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 def parse_args() -> argparse.Namespace:
     argparser = argparse.ArgumentParser()
-    argparser.add_argument("--model", type=str, default=ModelType.REGRESSOR)
+    argparser.add_argument("--model", type=str, default=ModelType.NEURAL_NETWORK)
     argparser.add_argument(
         "--train_data", default=Path(__file__).parent.resolve().joinpath("data", "train.csv"), type=str
     )
@@ -35,18 +35,22 @@ def main(args):
     model_type = ModelType(args.model)
     if model_type.value == ModelType.REGRESSOR.value:
         model = Regressor()
+        params = model.model.get_params()
     elif model_type.value == ModelType.XGB.value:
         with open(args.config, "r") as f:
             params = json.load(f)
         model = XGBModel(**params)
+        params = model.model.get_params()
     else:
         model = NeuralNetwork()
         model.add_to_model(Dense(64, activation="relu"))
         model.add_to_model(Dense(32, activation="relu"))
         model.add_to_model(Dense(1, activation="linear"))
         model.compile()
+        params = model.model.get_config()
     model.fit(X_train, y_train)
-    print(model.evaluate(X_test, y_test))
+    score = model.evaluate(X_test, y_test)
+    model.logmodel(model_type, ("r2_score", score), params=params, artifact=args.train_data)
 
 
 if __name__ == "__main__":
