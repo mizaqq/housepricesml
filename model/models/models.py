@@ -38,7 +38,7 @@ class Model(ABC, CustomBaseModel):
         pass
 
     def login_to_mlflow(
-        self, uri: str = "databricks", experiment_name: str = "/Users/michal.zareba@softwaremill.pl/houseprices"
+        self, uri: str = "databricks", experiment_name: str = "/Users/zarberu@gmail.com/houseprices"
     ) -> None:
         mlflow.login()
         mlflow.set_tracking_uri(uri)
@@ -51,7 +51,7 @@ class Model(ABC, CustomBaseModel):
                 for key, value in params.items():
                     mlflow.log_param(key, value)
             mlflow.log_metric(score[0], score[1])
-            mlflow.set_tag("Training", model)
+            mlflow.set_tag(model.name, "training")
             if artifact is not None:
                 mlflow.log_artifact(artifact)
 
