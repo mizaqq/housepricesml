@@ -4,7 +4,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler, Normalizer
 from utils.data_analysis import get_data_for_preprocessing
 from sklearn.model_selection import train_test_split
 import logging
-from typing import List, Sequence
+from typing import List, Sequence, Optional
 
 
 def drop_columns(df: pd.DataFrame, insignificant_col: Sequence[str], uncorrelated_col: Sequence[str]) -> pd.DataFrame:
@@ -62,7 +62,7 @@ def encode_onehot(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def preprocess_data(df: pd.DataFrame, df_test=None) -> pd.DataFrame:
+def preprocess_data(df: pd.DataFrame, df_test: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     uncorrelated_col, insignificant_col, missing_values_col = get_data_for_preprocessing(df, treshhold=0.05)
     logging.info(f"Uncorrelated columns: {uncorrelated_col}")
     logging.info(f"Insignificant columns: {insignificant_col}")

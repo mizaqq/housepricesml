@@ -77,8 +77,8 @@ class NeuralNetwork(Model):
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     # TODO refactor this to intake fit params
-    def fit(self, X: pd.DataFrame, y: pd.DataFrame, epchos, batch_size) -> None:
-        self.model.fit(X, y, epochs=100, batch_size=32)
+    def fit(self, X: pd.DataFrame, y: pd.DataFrame, epchos: int = 100, batch_size: int = 100) -> None:
+        self.model.fit(X, y, epochs=epchos, batch_size=batch_size)
 
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         return self.model.predict(X)
