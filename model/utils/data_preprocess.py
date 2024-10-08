@@ -5,6 +5,7 @@ from typing import Sequence
 from sklearn.preprocessing import LabelEncoder, StandardScaler, Normalizer
 from sklearn.model_selection import train_test_split
 from model.utils.data_analysis import get_data_for_preprocessing
+from model.utils.mlflow import MLFlowHandler
 
 
 def drop_columns(df: pd.DataFrame, insignificant_col: Sequence[str], uncorrelated_col: Sequence[str]) -> pd.DataFrame:
@@ -53,7 +54,6 @@ def encode_numeric(df: pd.DataFrame) -> pd.DataFrame:
 
 def encode_onehot(df: pd.DataFrame) -> pd.DataFrame:
     categorical_onehot = ["Neighborhood", "CentralAir", "SaleType"]
-
     for col in categorical_onehot:
         onehot = pd.get_dummies(df[col], prefix=col, dummy_na=True)
         df.drop(col, axis=1, inplace=True)
@@ -62,8 +62,10 @@ def encode_onehot(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def preprocess_data(df: pd.DataFrame, df_test=None) -> pd.DataFrame:
-    uncorrelated_col, insignificant_col, missing_values_col = get_data_for_preprocessing(df, treshhold=0.05)
+def preprocess_data(mlflow: MLFlowHandler, df: pd.DataFrame, df_test: pd.DataFrame = None) -> pd.DataFrame:
+    uncorrelated_col, insignificant_col, missing_values_col = get_data_for_preprocessing(
+        df, treshhold=0.05, mlflow=mlflow
+    )
     logging.info(f"Uncorrelated columns: {uncorrelated_col}")
     logging.info(f"Insignificant columns: {insignificant_col}")
     logging.info(f"Missing values columns: {missing_values_col}")
@@ -77,6 +79,7 @@ def preprocess_data(df: pd.DataFrame, df_test=None) -> pd.DataFrame:
         df_test = encode_numeric(df_test)
         df_test = encode_onehot(df_test)
         return df, df_test
+    mlflow.log_preprocessed_data(df)
     return df
 
 

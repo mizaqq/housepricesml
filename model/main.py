@@ -1,13 +1,12 @@
 import logging
 import json
 import argparse
-import os
 import pandas as pd
 from pathlib import Path
 from keras.api.layers import Dense
-from model.utils.data_preprocess import preprocess_data, split_data, normalize_data, scale_data
+from model.utils.data_preprocess import preprocess_data, split_data, normalize_data
 from model.models.models import XGBModel, Regressor, NeuralNetwork, ModelType
-from model.utils.hyper_params import perform_random_search
+from model.utils.mlflow import MLFlowHandler
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger().setLevel(logging.INFO)
@@ -15,7 +14,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 def parse_args() -> argparse.Namespace:
     argparser = argparse.ArgumentParser()
-    argparser.add_argument("--model", type=str, default=ModelType.NEURAL_NETWORK)
+    argparser.add_argument("--model", type=str, default=ModelType.XGB)
     argparser.add_argument(
         "--train_data", default=Path(__file__).parent.resolve().joinpath("data", "train.csv"), type=str
     )
@@ -29,7 +28,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def main(args):
-    df = preprocess_data(pd.read_csv(args.train_data))
+    mlflowhandler = MLFlowHandler()
+    df = preprocess_data(mlflowhandler, pd.read_csv(args.train_data))
     # df = normalize_data(df)
     X_train, X_test, y_train, y_test = split_data(df)
     model_type = ModelType(args.model)
@@ -50,7 +50,8 @@ def main(args):
         params = model.model.get_config()
     model.fit(X_train, y_train)
     score = model.evaluate(X_test, y_test)
-    model.logmodel(model_type, ("r2_score", score), params=params, artifact=args.train_data)
+    mlflowhandler.log_model(model, ("r2_score", score), params, args.train_data, X_train)
+    mlflowhandler.close()
 
 
 if __name__ == "__main__":
