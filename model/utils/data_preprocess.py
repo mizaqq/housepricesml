@@ -1,12 +1,11 @@
 import logging
 import pandas as pd
-from typing import Sequence
+from typing import List, Sequence, Optional
 
 from sklearn.preprocessing import LabelEncoder, StandardScaler, Normalizer
 from sklearn.model_selection import train_test_split
 from model.utils.data_analysis import get_data_for_preprocessing
 from model.utils.mlflow import MLFlowHandler
-
 
 def drop_columns(df: pd.DataFrame, insignificant_col: Sequence[str], uncorrelated_col: Sequence[str]) -> pd.DataFrame:
     df = df.drop(columns=insignificant_col)
@@ -62,7 +61,7 @@ def encode_onehot(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def preprocess_data(mlflow: MLFlowHandler, df: pd.DataFrame, df_test: pd.DataFrame = None) -> pd.DataFrame:
+def preprocess_data(mlflow: MLFlowHandler, df: pd.DataFrame, df_test: Optional[pd.DataFrame] = None) -> pd.DataFrame:
     uncorrelated_col, insignificant_col, missing_values_col = get_data_for_preprocessing(
         df, treshhold=0.05, mlflow=mlflow
     )
