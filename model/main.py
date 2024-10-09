@@ -1,13 +1,12 @@
 import logging
 import json
 import argparse
-import os
 import pandas as pd
 from pathlib import Path
 from keras.api.layers import Dense
-from model.utils.data_preprocess import preprocess_data, split_data, normalize_data, scale_data
+from model.utils.data_preprocess import preprocess_data, split_data, normalize_data
 from model.models.models import XGBModel, Regressor, NeuralNetwork, ModelType
-from model.utils.hyper_params import perform_random_search
+from model.utils.mlflow import MLFlowHandler
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger().setLevel(logging.INFO)
@@ -15,7 +14,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 def parse_args() -> argparse.Namespace:
     argparser = argparse.ArgumentParser()
-    argparser.add_argument("--model", type=str, default=ModelType.REGRESSOR)
+    argparser.add_argument("--model", type=str, default=ModelType.XGB)
     argparser.add_argument(
         "--train_data", default=Path(__file__).parent.resolve().joinpath("data", "train.csv"), type=str
     )
@@ -29,24 +28,30 @@ def parse_args() -> argparse.Namespace:
 
 
 def main(args):
-    df = preprocess_data(pd.read_csv(args.train_data))
+    mlflowhandler = MLFlowHandler()
+    df = preprocess_data(mlflowhandler, pd.read_csv(args.train_data))
     # df = normalize_data(df)
     X_train, X_test, y_train, y_test = split_data(df)
     model_type = ModelType(args.model)
     if model_type.value == ModelType.REGRESSOR.value:
         model = Regressor()
+        params = model.model.get_params()
     elif model_type.value == ModelType.XGB.value:
         with open(args.config, "r") as f:
             params = json.load(f)
         model = XGBModel(**params)
+        params = model.model.get_params()
     else:
         model = NeuralNetwork()
         model.add_to_model(Dense(64, activation="relu"))
         model.add_to_model(Dense(32, activation="relu"))
         model.add_to_model(Dense(1, activation="linear"))
         model.compile()
+        params = model.model.get_config()
     model.fit(X_train, y_train)
-    print(model.evaluate(X_test, y_test))
+    score = model.evaluate(X_test, y_test)
+    mlflowhandler.log_model(model, ("r2_score", score), params, args.train_data, X_train)
+    mlflowhandler.close()
 
 
 if __name__ == "__main__":
