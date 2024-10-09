@@ -64,9 +64,6 @@ class MLFlowHandler:
                 registered_model_name="houseprices.default.XGB",
             )
         else:
-            mlflow.keras.log_model(
-                keras_model=model.model,
-                artifact_path="houseprices_model",
-                input_example=X_train[:10],
-                registered_model_name="houseprices.default.NN",
+            mlflow.tensorflow.log_model(
+                model=model.model, artifact_path="houseprices_model", input_example=X_train[:10]
             )
