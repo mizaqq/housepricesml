@@ -3,6 +3,7 @@ import pandas as pd
 from typing import List, Tuple
 from scipy.stats import shapiro
 from model.utils.chi_square import perform_chi_square_test
+from model.utils.mlflow import MLFlowHandler
 
 
 def get_uncorrelated_col(df: pd.DataFrame, threshold: float) -> List[tuple]:
@@ -40,8 +41,21 @@ def get_missing_values(df: pd.DataFrame) -> List[tuple]:
     return missing_values_cols
 
 
-def get_data_for_preprocessing(df: pd.DataFrame, treshhold: float) -> Tuple[List[str], List[str], List[tuple]]:
+def get_data_for_preprocessing(
+    df: pd.DataFrame, treshhold: float, mlflow: MLFlowHandler
+) -> Tuple[List[str], List[str], List[tuple]]:
     uncorrelated_col = get_uncorrelated_col(df, treshhold)
     insignificant_col = get_insignificant_columns(df)
     missing_values_col = get_missing_values(df)
+    log_analysis(uncorrelated_col, insignificant_col, missing_values_col, mlflow)
     return [x[0] for x in uncorrelated_col], [y[0] for y in insignificant_col], missing_values_col
+
+
+def log_analysis(
+        treshhold: float, unrorrelated_col: List[tuple],
+        insignificant_col: List[tuple],
+        missing_values_col: List[tuple],
+        mlflow: MLFlowHandler) -> None:
+    mlflow.log_analysis(unrorrelated_col, "correlation coefficient")
+    mlflow.log_analysis(insignificant_col, f"chi square p-value Threshhold-{treshhold}")
+    mlflow.log_analysis(missing_values_col, "missing values")

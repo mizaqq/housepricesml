@@ -1,0 +1,15 @@
+services:
+  mlflow:
+    build: .
+    image: ghcr.io/mlflow/mlflow
+    ports:
+      - 5000:5000
+    environment:
+      MLFLOW_SERVER_DEFAULT_ARTIFACT_ROOT: /mlflow/artifacts
+    command: mlflow server --backend-store-uri postgresql://postgres:password@db:5432/mlflow --host 0.0.0.0
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mlflow
