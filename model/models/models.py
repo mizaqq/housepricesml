@@ -35,6 +35,10 @@ class Model(ABC, CustomBaseModel):
     def evaluate(self, predictions: pd.DataFrame, y: pd.DataFrame):
         pass
 
+    @abstractmethod
+    def get_params(self):
+        pass
+
 
 class Regressor(Model):
     def __init__(self, **kwargs) -> Model:
@@ -48,6 +52,9 @@ class Regressor(Model):
 
     def evaluate(self, X, y: pd.DataFrame) -> float:
         return r2_score(y, self.predict(X))
+
+    def get_params(self):
+        return self.model.get_params()
 
 
 class XGBModel(Model):
@@ -63,6 +70,9 @@ class XGBModel(Model):
 
     def evaluate(self, X, y: pd.DataFrame) -> float:
         return r2_score(y, self.predict(X))
+
+    def get_params(self):
+        return self.model.get_params()
 
 
 class NeuralNetwork(Model):
@@ -83,3 +93,6 @@ class NeuralNetwork(Model):
 
     def evaluate(self, X, y: pd.DataFrame) -> float:
         return r2_score(y, self.predict(X))
+
+    def get_params(self):
+        return self.model.get_config()

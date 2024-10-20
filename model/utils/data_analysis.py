@@ -47,7 +47,15 @@ def get_data_for_preprocessing(
     uncorrelated_col = get_uncorrelated_col(df, treshhold)
     insignificant_col = get_insignificant_columns(df)
     missing_values_col = get_missing_values(df)
-    mlflow.log_analysis(uncorrelated_col, "correlation coefficient")
-    mlflow.log_analysis(insignificant_col, f"chi square p-value Threshhold: {treshhold}")
-    mlflow.log_analysis(missing_values_col, "missing values")
+    log_analysis(uncorrelated_col, insignificant_col, missing_values_col, mlflow)
     return [x[0] for x in uncorrelated_col], [y[0] for y in insignificant_col], missing_values_col
+
+
+def log_analysis(
+        treshhold: float, unrorrelated_col: List[tuple],
+        insignificant_col: List[tuple],
+        missing_values_col: List[tuple],
+        mlflow: MLFlowHandler) -> None:
+    mlflow.log_analysis(unrorrelated_col, "correlation coefficient")
+    mlflow.log_analysis(insignificant_col, f"chi square p-value Threshhold-{treshhold}")
+    mlflow.log_analysis(missing_values_col, "missing values")

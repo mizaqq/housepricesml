@@ -14,7 +14,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 def parse_args() -> argparse.Namespace:
     argparser = argparse.ArgumentParser()
-    argparser.add_argument("--model", type=str, default=ModelType.XGB)
+    argparser.add_argument("--model", type=str, default=ModelType.REGRESSOR)
     argparser.add_argument(
         "--train_data", default=Path(__file__).parent.resolve().joinpath("data", "train.csv"), type=str
     )
@@ -28,30 +28,27 @@ def parse_args() -> argparse.Namespace:
 
 
 def main(args):
-    mlflowhandler = MLFlowHandler()
-    df = preprocess_data(mlflowhandler, pd.read_csv(args.train_data))
+    mlflow_handler = MLFlowHandler()
+    df = preprocess_data(mlflow_handler, pd.read_csv(args.train_data))
     # df = normalize_data(df)
     X_train, X_test, y_train, y_test = split_data(df)
     model_type = ModelType(args.model)
     if model_type.value == ModelType.REGRESSOR.value:
         model = Regressor()
-        params = model.model.get_params()
     elif model_type.value == ModelType.XGB.value:
         with open(args.config, "r") as f:
             params = json.load(f)
         model = XGBModel(**params)
-        params = model.model.get_params()
     else:
         model = NeuralNetwork()
         model.add_to_model(Dense(64, activation="relu"))
         model.add_to_model(Dense(32, activation="relu"))
         model.add_to_model(Dense(1, activation="linear"))
         model.compile()
-        params = model.model.get_config()
     model.fit(X_train, y_train)
     score = model.evaluate(X_test, y_test)
-    mlflowhandler.log_model(model, ("r2_score", score), params, args.train_data, X_train)
-    mlflowhandler.close()
+    mlflow_handler.log_model(model, ("r2_score", score), model.get_params(), args.train_data, X_train)
+    mlflow_handler.close()
 
 
 if __name__ == "__main__":
