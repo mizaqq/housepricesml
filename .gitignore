@@ -63,3 +63,4 @@ docs/_build/
 # VS Code
 .vscode
 mlruns
+outputs/

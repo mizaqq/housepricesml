@@ -1,0 +1,8 @@
+data:
+  train: 'model/data/train.csv'
+
+preprocessing:
+  threshhold: 0.05
+
+model:
+  type: 'REGRESSOR'
