@@ -9,7 +9,4 @@ services:
     command: mlflow server --backend-store-uri postgresql://postgres:password@db:5432/mlflow --host 0.0.0.0
   db:
     image: postgres:latest
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mlflow
+    env_file: ".env"
