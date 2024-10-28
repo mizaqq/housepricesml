@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 from pathlib import Path
+from typing import Sequence
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
@@ -43,12 +44,12 @@ def perform_grid_search(
 
     y_test = grid.best_estimator_.predict_proba(y_test)
     results_df = pd.DataFrame(data={"id": y_test["id"], "target": y_test[:, 1]})
-    results_df.to_csv("score_on_test" + output_path, index=False)
+    results_df.to_csv(output_path.joinpath(Path("score_on_test")), index=False)
 
 
 def perform_random_search(
-    X_train,
-    y_train,
+    X_train: Sequence,
+    y_train: Sequence,
     output_path: Path = Path(__file__).parent.parent.resolve().joinpath("data", "best_params_random_search.json"),
     rendom_state: int = 0,
     test_config_path: Path = Path(__file__).parent.parent.resolve().joinpath("data", "random_search_params.json"),

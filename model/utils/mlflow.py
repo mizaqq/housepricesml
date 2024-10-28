@@ -1,41 +1,40 @@
 import os
 import mlflow
 import pandas as pd
-from typing import Tuple, List, Union, Optional
+import tempfile
+from typing import Tuple, Sequence, Any, Optional, List
 from pathlib import Path
-from model.models.models import ModelType, Regressor, XGBModel
+from model.models.models import Model, Regressor, XGBModel
 
 
 class MLFlowHandler:
-    def __init__(self):
-        self.login_to_mlflow()
+    def __init__(self, uri: str, experiment_name: str) -> None:
+        self.login_to_mlflow(uri, experiment_name)
         self.run = mlflow.start_run()
 
-    def close(self):
+    def close(self) -> None:
         mlflow.end_run()
 
-    def login_to_mlflow(
-        self, uri: str = "http://48.209.80.111:5000", experiment_name: str = "housepricesml"
-    ) -> None:
+    def login_to_mlflow(self, uri: str, experiment_name: str) -> None:
         mlflow.set_tracking_uri(uri)
         mlflow.set_experiment(experiment_name)
 
-    def log_preprocessed_data(self, df: pd.DataFrame, path: Path = Path("preprocessed_data.csv")) -> None:
-        df.to_csv(path)
-        mlflow.log_artifact(path)
-        os.remove(path)
+    def log_preprocessed_data(self, df: pd.DataFrame) -> None:
+        with tempfile.NamedTemporaryFile() as temp:
+            df.to_csv(temp.name)
+            mlflow.log_artifact(temp.name)
 
-    def log_analysis(self, data: List[Tuple[str, Union[float, bool]]], metric_type: str) -> None:
+    def log_analysis(self, data: Sequence[Tuple[Any, ...]], metric_type: str) -> None:
         for item in data:
             mlflow.log_metric(item[0] + " " + metric_type, item[1])
 
     def log_model(
         self,
-        model: ModelType,
+        model: Model,
         score: Tuple[str, float],
+        X_train: Sequence,
         params: Optional[dict] = None,
         artifact: Optional[Path] = None,
-        X_train: Optional[pd.DataFrame] = None,
     ) -> None:
         if params is not None:
             for key, value in params.items():

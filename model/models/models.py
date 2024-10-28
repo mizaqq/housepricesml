@@ -32,16 +32,16 @@ class Model(ABC, CustomBaseModel):
         pass
 
     @abstractmethod
-    def evaluate(self, predictions: pd.DataFrame, y: pd.DataFrame):
+    def evaluate(self, predictions: pd.DataFrame, y: pd.DataFrame) -> float:
         pass
 
     @abstractmethod
-    def get_params(self):
+    def get_params(self) -> dict:
         pass
 
 
 class Regressor(Model):
-    def __init__(self, **kwargs) -> Model:
+    def __init__(self, **kwargs: dict) -> None:
         super().__init__(model=LinearRegression())
 
     def fit(self, X: pd.DataFrame, y: pd.DataFrame) -> None:
@@ -50,15 +50,15 @@ class Regressor(Model):
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         return self.model.predict(X)
 
-    def evaluate(self, X, y: pd.DataFrame) -> float:
+    def evaluate(self, X: pd.DataFrame, y: pd.DataFrame) -> float:
         return r2_score(y, self.predict(X))
 
-    def get_params(self):
+    def get_params(self) -> dict:
         return self.model.get_params()
 
 
 class XGBModel(Model):
-    def __init__(self, **kwargs) -> Model:
+    def __init__(self, **kwargs: dict) -> None:
         super().__init__(model=XGBRegressor())
         self.model.set_params(**kwargs)
 
@@ -68,21 +68,21 @@ class XGBModel(Model):
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         return self.model.predict(X)
 
-    def evaluate(self, X, y: pd.DataFrame) -> float:
+    def evaluate(self, X: pd.DataFrame, y: pd.DataFrame) -> float:
         return r2_score(y, self.predict(X))
 
-    def get_params(self):
+    def get_params(self) -> dict:
         return self.model.get_params()
 
 
 class NeuralNetwork(Model):
-    def __init__(self) -> Model:
+    def __init__(self) -> None:
         super().__init__(model=Sequential())
 
-    def add_to_model(self, layer: Layer):
+    def add_to_model(self, layer: Layer) -> None:
         self.model.add(layer)
 
-    def compile(self, optimizer="adam", loss="mean_squared_error", metrics=["r2_score"]):
+    def compile(self, optimizer: str = "adam", loss: str = "mean_squared_error", metrics: list = ["r2_score"]) -> None:
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     def fit(self, X: pd.DataFrame, y: pd.DataFrame, epochs: int = 100, batch_size: int = 32) -> None:
@@ -91,8 +91,8 @@ class NeuralNetwork(Model):
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         return self.model.predict(X)
 
-    def evaluate(self, X, y: pd.DataFrame) -> float:
+    def evaluate(self, X: pd.DataFrame, y: pd.DataFrame) -> float:
         return r2_score(y, self.predict(X))
 
-    def get_params(self):
+    def get_params(self) -> dict:
         return self.model.get_config()
