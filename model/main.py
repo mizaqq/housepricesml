@@ -1,7 +1,7 @@
 import os
 import logging
 import pandas as pd
-from keras.api.layers import Dense
+from keras.api.layers import Dense, Dropout
 from model.utils.data_preprocess import preprocess_data, split_data, normalize_data, get_data_for_preprocessing
 from model.models.models import XGBModel, Regressor, NeuralNetwork, ModelType
 from model.utils.mlflow import MLFlowHandler
@@ -26,19 +26,23 @@ def main(cfg: DictConfig) -> None:
     mlflow_handler.log_preprocessed_data(df)
     # df = normalize_data(df)
     X_train, X_test, y_train, y_test = split_data(df)
-    model_type = ModelType(cfg["model"]["type"].lower())
+    model_type = ModelType(cfg["models"]["type"].lower())
     if model_type.value == ModelType.REGRESSOR.value:
         model = Regressor()
     elif model_type.value == ModelType.XGB.value:
-        params = cfg["model"]["params"]
+        params = cfg["models"]["params"]
         model = XGBModel(**params)
     else:
         model = NeuralNetwork()
-        model.add_to_model(Dense(64, activation="relu"))
-        model.add_to_model(Dense(32, activation="relu"))
-        model.add_to_model(Dense(1, activation="linear"))
+        for layer in cfg["models"]["params"]["layers"]:
+            if layer["type"] == "dense":
+                model.add_to_model(Dense(layer["units"], activation=layer["activation"]))
+            elif layer["type"] == "dropout":
+                model.add_to_model(Dropout(layer["rate"]))
         model.compile()
-    model.fit(X_train, y_train)
+        model.fit(X_train, y_train, cfg["models"]["params"]["epochs"], cfg["models"]["params"]["batch_size"])
+    if model_type.value != ModelType.NEURAL_NETWORK.value:
+        model.fit(X_train, y_train)
     score = model.evaluate(X_test, y_test)
     mlflow_handler.log_model(model, ("r2_score", score), X_train, model.get_params(), cfg["data"]["train"])
     mlflow_handler.close()

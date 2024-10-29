@@ -4,5 +4,5 @@ data:
 preprocessing:
   threshhold: 0.05
 
-model:
-  type: 'REGRESSOR'
+defaults:
+  - models: regressor
