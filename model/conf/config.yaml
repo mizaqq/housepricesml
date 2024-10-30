@@ -6,3 +6,9 @@ preprocessing:
 
 defaults:
   - models: regressor
+
+hydra:
+  mode: MULTIRUN
+  sweeper:
+    params:
+      models: glob(*)
