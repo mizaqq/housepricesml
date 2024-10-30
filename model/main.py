@@ -20,7 +20,7 @@ def main(cfg: DictConfig) -> None:
     mlflow_handler = MLFlowHandler(uri, experiment_name)
     df = pd.read_csv(cfg["data"]["train"])
     uncorrelated_col, insignificant_col, missing_values_col = get_data_for_preprocessing(
-        df, treshhold=cfg["preprocessing"]["threshhold"], mlflow=mlflow_handler
+        df, treshhold=cfg["preprocessing"]["threshold"], mlflow=mlflow_handler
     )
     df = preprocess_data(df, uncorrelated_col, insignificant_col, missing_values_col)
     mlflow_handler.log_preprocessed_data(df)

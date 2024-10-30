@@ -2,7 +2,7 @@ data:
   train: 'model/data/train.csv'
 
 preprocessing:
-  threshhold: 0.05
+  threshold: 0.05
 
 defaults:
   - models: regressor
