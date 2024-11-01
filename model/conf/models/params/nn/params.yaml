@@ -1,0 +1,18 @@
+epochs: 200
+batch_size: 16
+learning_rate: 0.05
+
+layers:
+  - type: dense
+    units: 64
+    activation: relu
+  - type: dropout
+    rate: 0.2
+  - type: dense
+    units: 64
+    activation: relu
+  - type: dropout
+    rate: 0.2
+  - type: dense
+    units: 1
+    activation: linear

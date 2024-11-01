@@ -1,0 +1,14 @@
+data:
+  train: 'model/data/train.csv'
+
+preprocessing:
+  threshold: 0.05
+
+defaults:
+  - models: regressor
+
+hydra:
+  mode: MULTIRUN
+  sweeper:
+    params:
+      models: glob(*)

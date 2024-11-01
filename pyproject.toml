@@ -20,6 +20,7 @@ keras = "^3.5.0"
 tensorflow = "^2.17.0"
 mlflow = {extras = ["databricks"], version = "^2.16.2"}
 pre-commit = "^4.0.1"
+hydra-core = "^1.3.2"
 
 
 [build-system]
