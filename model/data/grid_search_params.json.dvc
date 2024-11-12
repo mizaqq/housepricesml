@@ -1,0 +1,5 @@
+outs:
+- md5: 8c816f6a6a796fd8a4f633e29ea91895
+  size: 820
+  hash: md5
+  path: grid_search_params.json

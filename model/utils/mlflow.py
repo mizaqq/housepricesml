@@ -5,6 +5,7 @@ import tempfile
 from typing import Tuple, Sequence, Any, Optional, List
 from pathlib import Path
 from model.models.models import Model, Regressor, XGBModel
+import subprocess
 
 
 class MLFlowHandler:
@@ -27,6 +28,10 @@ class MLFlowHandler:
     def log_analysis(self, data: Sequence[Tuple[Any, ...]], metric_type: str) -> None:
         for item in data:
             mlflow.log_metric(item[0] + " " + metric_type, item[1])
+
+    def log_commit(self) -> None:
+        tag = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip()
+        mlflow.set_tag("Git Commit", tag.decode())
 
     def log_model(
         self,

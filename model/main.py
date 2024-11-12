@@ -7,7 +7,6 @@ from model.models.models import XGBModel, Regressor, NeuralNetwork, ModelType
 from model.utils.mlflow import MLFlowHandler
 from omegaconf import DictConfig, OmegaConf
 import hydra
-
 logging.basicConfig(level=logging.INFO)
 logging.getLogger().setLevel(logging.INFO)
 
@@ -18,6 +17,7 @@ def main(cfg: DictConfig) -> None:
     uri = os.environ.get("MLFLOW_TRACKING_URI", "http://48.209.80.111:5000")
     experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME", "housepricesml")
     mlflow_handler = MLFlowHandler(uri, experiment_name)
+    mlflow_handler.log_commit()
     df = pd.read_csv(cfg["data"]["train"])
     uncorrelated_col, insignificant_col, missing_values_col = get_data_for_preprocessing(
         df, treshhold=cfg["preprocessing"]["threshold"], mlflow=mlflow_handler
